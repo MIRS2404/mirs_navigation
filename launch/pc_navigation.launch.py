@@ -9,28 +9,26 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
     
     # パッケージのパスを取得
-    package_name = 'mirs_navigation'  # あなたのパッケージ名に変更してください
+    package_name = 'mirs_navigation'
     package_path = get_package_share_directory(package_name)
     
     # 設定ファイルのパスを設定
-    nav2_params_path = os.path.join(package_path, 'params', 'nav2_params.yaml')
+    nav2_params_path = os.path.join(package_path, 'config', 'nav2_params.yaml')
     rviz_config_file = '/opt/ros/humble/share/nav2_bringup/rviz/nav2_default_view.rviz'
     
-    # 引数の宣言
-    declare_map_arg = DeclareLaunchArgument(
-        'map',
-        description='Full path to map yaml file to load'
-    )
+    # デフォルトのマップパスを設定
+    default_map_path = '/home/omasahiro/maps/hallway.yaml'
 
     # Map Server
     map_server = Node(
         package='nav2_map_server',
         executable='map_server',
         name='map_server',
-        output='screen',  # エラーメッセージを確認するため追加
+        output='screen',
         parameters=[{
-            'yaml_filename': LaunchConfiguration('map'),
-            'use_sim_time': use_sim_time
+            'yaml_filename': default_map_path,
+            'use_sim_time': use_sim_time,
+            'frame_id': 'map'
         }]
     )
 
@@ -39,7 +37,9 @@ def generate_launch_description():
         package='nav2_amcl',
         executable='amcl',
         name='amcl',
-        parameters=[nav2_params_path]
+        output='screen',
+        parameters=[nav2_params_path,
+            {'use_sim_time': use_sim_time}]
     )
 
     # Controller
@@ -48,7 +48,8 @@ def generate_launch_description():
         executable='controller_server',
         name='controller_server',
         output='screen',
-        parameters=[nav2_params_path]
+        parameters=[nav2_params_path,
+            {'use_sim_time': use_sim_time}]
     )
 
     # Planner
@@ -57,7 +58,8 @@ def generate_launch_description():
         executable='planner_server',
         name='planner_server',
         output='screen',
-        parameters=[nav2_params_path]
+        parameters=[nav2_params_path,
+            {'use_sim_time': use_sim_time}]
     )
 
     # BT Navigator
@@ -66,25 +68,36 @@ def generate_launch_description():
         executable='bt_navigator',
         name='bt_navigator',
         output='screen',
-        parameters=[nav2_params_path]
+        parameters=[nav2_params_path,
+            {'use_sim_time': use_sim_time}]
     )
 
-    # Lifecycle Manager
-    lifecycle_manager = Node(
+    # Lifecycle Manager for Navigation
+    lifecycle_manager_navigation = Node(
         package='nav2_lifecycle_manager',
         executable='lifecycle_manager',
-        name='lifecycle_manager_navigation',  # 名前を明確に
+        name='lifecycle_manager_navigation',
         output='screen',
         parameters=[{
             'use_sim_time': use_sim_time,
             'autostart': True,
-            'node_names': ['map_server', 
-                        'amcl',
-                        'controller_server',
-                        'planner_server',
-                        'bt_navigator',
-                        'global_costmap/global_costmap',
-                        'local_costmap/local_costmap']  # costmapノードを追加
+            'node_names': ['map_server'],
+        }]
+    )
+
+    # Lifecycle Manager for Navigation Core
+    lifecycle_manager_localization = Node(
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='lifecycle_manager_localization',
+        output='screen',
+        parameters=[{
+            'use_sim_time': use_sim_time,
+            'autostart': True,
+            'node_names': ['amcl',
+                          'controller_server',
+                          'planner_server',
+                          'bt_navigator'],
         }]
     )
 
@@ -101,16 +114,14 @@ def generate_launch_description():
     # Create and return launch description
     ld = LaunchDescription()
 
-    # Add launch arguments
-    ld.add_action(declare_map_arg)
-
     # Add nodes
     ld.add_action(map_server)
     ld.add_action(amcl)
     ld.add_action(controller_server)
     ld.add_action(planner_server)
     ld.add_action(bt_navigator)
-    ld.add_action(lifecycle_manager)
+    ld.add_action(lifecycle_manager_navigation)  # マップサーバーを先に起動
+    ld.add_action(lifecycle_manager_localization)  # その他のナビゲーションノードを後から起動
     ld.add_action(rviz2_node)
 
     return ld
