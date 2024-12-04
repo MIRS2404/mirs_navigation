@@ -17,7 +17,7 @@ def generate_launch_description():
     rviz_config_file = '/opt/ros/humble/share/nav2_bringup/rviz/nav2_default_view.rviz'
     
     # デフォルトのマップパスを設定
-    default_map_path = '/home/omasahiro/maps/hallway.yaml'
+    default_map_path = '/home/omasahiro/mirs2404_ws/src/mirs_slam_navigation/mirs_navigation/maps/hallway.yaml'
 
     # Map Server
     map_server = Node(
@@ -96,6 +96,33 @@ def generate_launch_description():
         parameters=[nav2_params_path]
     )
 
+    smoother_server = Node(
+        package='nav2_smoother',
+        executable='smoother_server',
+        name='smoother_server',
+        output='screen',
+        emulate_tty=True,
+        parameters=[nav2_params_path]
+    )
+
+    velocity_smoother = Node(
+        package='nav2_velocity_smoother',
+        executable='velocity_smoother',
+        name='velocity_smoother',
+        output='screen',
+        emulate_tty=True,
+        parameters=[nav2_params_path]
+    )
+
+    waypoint_follower = Node(
+        package='nav2_waypoint_follower',
+        executable='waypoint_follower',
+        name='waypoint_follower',
+        output='screen',
+        emulate_tty=True,
+        parameters=[nav2_params_path]
+    )
+
     # RViz2
     rviz2_node = Node(
         package='rviz2',
@@ -109,13 +136,15 @@ def generate_launch_description():
 # Create and return launch description
     ld = LaunchDescription()
 
-# Add nodes in この順序で追加
     ld.add_action(map_server)
-    ld.add_action(behavior_server)  # behaviorを先に
+    ld.add_action(behavior_server)
+    ld.add_action(smoother_server)
+    ld.add_action(velocity_smoother)
     ld.add_action(controller_server)
     ld.add_action(planner_server)
+    ld.add_action(waypoint_follower)
     ld.add_action(amcl)
-    ld.add_action(bt_navigator)  # BTは最後の方に
+    ld.add_action(bt_navigator)
     ld.add_action(lifecycle_manager)
     ld.add_action(rviz2_node)
 
