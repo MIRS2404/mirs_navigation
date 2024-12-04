@@ -25,6 +25,7 @@ def generate_launch_description():
         executable='map_server',
         name='map_server',
         output='screen',
+        emulate_tty=True,
         parameters=[{
             'yaml_filename': default_map_path,
             'use_sim_time': use_sim_time,
@@ -38,8 +39,8 @@ def generate_launch_description():
         executable='amcl',
         name='amcl',
         output='screen',
-        parameters=[nav2_params_path,
-            {'use_sim_time': use_sim_time}]
+        emulate_tty=True,
+        parameters=[nav2_params_path]
     )
 
     # Controller
@@ -48,8 +49,8 @@ def generate_launch_description():
         executable='controller_server',
         name='controller_server',
         output='screen',
-        parameters=[nav2_params_path,
-            {'use_sim_time': use_sim_time}]
+        emulate_tty=True,
+        parameters=[nav2_params_path]
     )
 
     # Planner
@@ -58,8 +59,8 @@ def generate_launch_description():
         executable='planner_server',
         name='planner_server',
         output='screen',
-        parameters=[nav2_params_path,
-            {'use_sim_time': use_sim_time}]
+        emulate_tty=True,
+        parameters=[nav2_params_path]
     )
 
     # BT Navigator
@@ -68,12 +69,12 @@ def generate_launch_description():
         executable='bt_navigator',
         name='bt_navigator',
         output='screen',
-        parameters=[nav2_params_path,
-            {'use_sim_time': use_sim_time}]
+        emulate_tty=True,
+        parameters=[nav2_params_path]
     )
 
-    # Lifecycle Manager for Navigation
-    lifecycle_manager_navigation = Node(
+    # Single Lifecycle Manager
+    lifecycle_manager = Node(
         package='nav2_lifecycle_manager',
         executable='lifecycle_manager',
         name='lifecycle_manager_navigation',
@@ -81,23 +82,13 @@ def generate_launch_description():
         parameters=[{
             'use_sim_time': use_sim_time,
             'autostart': True,
-            'node_names': ['map_server'],
-        }]
-    )
-
-    # Lifecycle Manager for Navigation Core
-    lifecycle_manager_localization = Node(
-        package='nav2_lifecycle_manager',
-        executable='lifecycle_manager',
-        name='lifecycle_manager_localization',
-        output='screen',
-        parameters=[{
-            'use_sim_time': use_sim_time,
-            'autostart': True,
-            'node_names': ['amcl',
+            'node_names': ['map_server', 
+                          'amcl',
                           'controller_server',
                           'planner_server',
                           'bt_navigator'],
+            'bond_timeout': 4.0,
+            'attempt_respawn_reconnection': True
         }]
     )
 
@@ -120,8 +111,7 @@ def generate_launch_description():
     ld.add_action(controller_server)
     ld.add_action(planner_server)
     ld.add_action(bt_navigator)
-    ld.add_action(lifecycle_manager_navigation)  # マップサーバーを先に起動
-    ld.add_action(lifecycle_manager_localization)  # その他のナビゲーションノードを後から起動
+    ld.add_action(lifecycle_manager)
     ld.add_action(rviz2_node)
 
     return ld
