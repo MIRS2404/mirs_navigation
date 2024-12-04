@@ -123,6 +123,14 @@ def generate_launch_description():
         parameters=[nav2_params_path]
     )
 
+#    nav2_costmap_2d = Node(
+#        package='nav2_costmap_2d',
+#        executable='nav2_costmap_2d',
+#        name='nav2_costmap_2d',
+#        output='screen',
+#        parameters=[nav2_params_path]
+#    )
+
     # RViz2
     rviz2_node = Node(
         package='rviz2',
@@ -137,15 +145,16 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     ld.add_action(map_server)
+    ld.add_action(lifecycle_manager)
+#    ld.add_action(nav2_costmap_2d)
+    ld.add_action(controller_server)
+    ld.add_action(planner_server)
     ld.add_action(behavior_server)
     ld.add_action(smoother_server)
     ld.add_action(velocity_smoother)
-    ld.add_action(controller_server)
-    ld.add_action(planner_server)
     ld.add_action(waypoint_follower)
     ld.add_action(amcl)
     ld.add_action(bt_navigator)
-    ld.add_action(lifecycle_manager)
     ld.add_action(rviz2_node)
 
     return ld
