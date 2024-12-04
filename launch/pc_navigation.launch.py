@@ -82,14 +82,18 @@ def generate_launch_description():
         parameters=[{
             'use_sim_time': use_sim_time,
             'autostart': True,
-            'node_names': ['map_server', 
-                          'amcl',
-                          'controller_server',
-                          'planner_server',
-                          'bt_navigator'],
+            'node_names': ['map_server', 'amcl', 'controller_server', 'planner_server', 'bt_navigator', 'behavior_server'],
             'bond_timeout': 4.0,
             'attempt_respawn_reconnection': True
         }]
+    )
+
+    behavior_server = Node(
+        package='nav2_behaviors',
+        executable='behavior_server',
+        name='behavior_server',
+        output='screen',
+        parameters=[nav2_params_path]
     )
 
     # RViz2
@@ -102,15 +106,16 @@ def generate_launch_description():
         output='screen'
     )
 
-    # Create and return launch description
+# Create and return launch description
     ld = LaunchDescription()
 
-    # Add nodes
+# Add nodes in この順序で追加
     ld.add_action(map_server)
-    ld.add_action(amcl)
+    ld.add_action(behavior_server)  # behaviorを先に
     ld.add_action(controller_server)
     ld.add_action(planner_server)
-    ld.add_action(bt_navigator)
+    ld.add_action(amcl)
+    ld.add_action(bt_navigator)  # BTは最後の方に
     ld.add_action(lifecycle_manager)
     ld.add_action(rviz2_node)
 
