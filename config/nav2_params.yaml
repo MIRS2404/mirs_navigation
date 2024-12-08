@@ -91,6 +91,7 @@ controller_server:
     progress_checker_plugin: "progress_checker"
     goal_checker_plugins: ["general_goal_checker"]
     controller_plugins: ["FollowPath"]
+    speed_limit_ratio: 1.0
 
     # Progress checker parameters
     progress_checker:
@@ -126,14 +127,14 @@ controller_server:
       cmd_vel_topic: "/cmd_vel"
 
       # Velocity smoothing
-      velocity_smoother:
-        smoothing_frequency: 20.0
-        scale_velocities: false
-        feedback: "OPEN_LOOP"
-        max_velocity: [0.5, 0.0, 1.8]
-        min_velocity: [-0.5, 0.0, -1.8]
-        max_accel: [2.5, 0.0, 3.2]
-        max_decel: [-2.5, 0.0, -3.2]
+      #velocity_smoother:
+      #  smoothing_frequency: 20.0
+      #  scale_velocities: false
+      #  feedback: "OPEN_LOOP"
+      #  max_velocity: [0.05, 0.0, 1.8]
+      #  min_velocity: [-0.05, 0.0, -1.8]
+      #  max_accel: [0.5, 0.0, 3.2]
+      #  max_decel: [-0.5, 0.0, -3.2]
         
       # Publisher parameters
       publish_period: 0.05
@@ -256,10 +257,10 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: false
     feedback: "OPEN_LOOP"
-    max_velocity: [0.5, 0.0, 1.8]
-    min_velocity: [-0.5, 0.0, -1.8]
-    max_accel: [2.5, 0.0, 3.2]
-    max_decel: [-2.5, 0.0, -3.2]
+    max_velocity: [0.5, 0.0, 1.0]
+    min_velocity: [-0.5, 0.0, -1.0]
+    max_accel: [1.0, 0.0, 1.2]
+    max_decel: [-1.0, 0.0, -1.2]
     odom_topic: "odom"
     odom_duration: 0.1
     deadband_velocity: [0.0, 0.0, 0.0]
@@ -272,4 +273,6 @@ velocity_smoother:
 #    frame_id: "map"
 #    use_sim_time: false
 #    output_timing: false
+
+
 
