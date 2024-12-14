@@ -20,11 +20,11 @@ amcl:
     set_initial_pose: true
     lambda_short: 0.1
     laser_likelihood_max_dist: 2.0
-    laser_max_range: -1.0
+    laser_max_range: 10.0
     laser_min_range: 0.12
     laser_model_type: "likelihood_field"
-    max_beams: 60
-    max_particles: 2000
+    max_beams: 100
+    max_particles: 5000
     min_particles: 500
     odom_frame_id: "odom"
     pf_err: 0.05
@@ -37,8 +37,8 @@ amcl:
     sigma_hit: 0.2
     tf_broadcast: true
     transform_tolerance: 0.5
-    update_min_a: 0.2
-    update_min_d: 0.25
+    update_min_a: 0.1
+    update_min_d: 0.1
     z_hit: 0.5
     z_max: 0.05
     z_rand: 0.5
@@ -54,9 +54,8 @@ bt_navigator:
     robot_base_frame: base_link
     odom_topic: /odom
     enable_groot_monitoring: true
-    #default_nav_to_pose_bt_xml: "/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_w_replanning_and_recovery.xml"
-    #default_nav_through_poses_bt_xml: "/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_through_poses_w_replanning_and_recovery.xml"
-    default_bt_xml_filename: "/home/omasahiro/mirs2404_ws/src/mirs_slam_navigation/mirs_navigation/btdata/bt_sample.xml"
+    default_bt_xml_filename: "/opt/ros/humble/share/nav2_bringup/params/nav2_params.yaml"
+    #default_bt_xml_filename: "/home/omasahiro/mirs2404_ws/src/mirs_slam_navigation/mirs_navigation/btdata/bt_sample.xml"
     plugin_lib_names:
       - nav2_compute_path_to_pose_action_bt_node
       - nav2_compute_path_through_poses_action_bt_node
@@ -109,36 +108,22 @@ controller_server:
     # DWB parameters
     FollowPath:
       plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
-      desired_linear_vel: 0.5
+      desired_linear_vel: 0.4  #これ
       lookahead_dist: 0.6
-      min_lookahead_dist: 0.3
+      min_lookahead_dist: 0.2
       max_lookahead_dist: 0.9
       lookahead_time: 1.5
       rotate_to_heading_angular_vel: 1.8
       transform_tolerance: 0.1
       use_velocity_scaled_lookahead_dist: false
       min_approach_linear_velocity: 0.05
-      approach_velocity_scaling_dist: 0.6
-      max_allowed_linear_vel: 0.5
-      max_allowed_angular_vel: 1.0
+      approach_velocity_scaling_dist: 1.0
+      max_allowed_linear_vel: 0.4  #これ
+      max_allowed_angular_vel: 0.5
       
       # Publisher parameters
       publish_period: 0.05
-      cmd_vel_topic: "/cmd_vel"
-
-      # Velocity smoothing
-      #velocity_smoother:
-      #  smoothing_frequency: 20.0
-      #  scale_velocities: false
-      #  feedback: "OPEN_LOOP"
-      #  max_velocity: [0.05, 0.0, 1.8]
-      #  min_velocity: [-0.05, 0.0, -1.8]
-      #  max_accel: [0.5, 0.0, 3.2]
-      #  max_decel: [-0.5, 0.0, -3.2]
-        
-      # Publisher parameters
-      publish_period: 0.05
-      cmd_vel_topic: /cmd_vel
+      cmd_vel_topic: "/cmd_vel_raw"  # Changed to feed into velocity_smoother
 
     # Common parameters
     transform_tolerance: 0.1
@@ -181,13 +166,13 @@ global_costmap:
       
     inflation_layer:
       plugin: "nav2_costmap_2d::InflationLayer"
-      cost_scaling_factor: 3.0
-      inflation_radius: 0.55
+      cost_scaling_factor: 2.0
+      inflation_radius: 0.7
 
 local_costmap:
   ros__parameters:
-    update_frequency: 5.0
-    publish_frequency: 2.0
+    update_frequency: 10.0
+    publish_frequency: 5.0
     global_frame: odom
     robot_base_frame: base_link
     rolling_window: true
@@ -208,15 +193,15 @@ local_costmap:
         clearing: True
         marking: True
         data_type: "LaserScan"
-        raytrace_max_range: 3.0
+        raytrace_max_range: 5.5
         raytrace_min_range: 0.0
-        obstacle_max_range: 2.5
-        obstacle_min_range: 0.0
+        obstacle_max_range: 5.0
+        obstacle_min_range: 0.05
       
     inflation_layer:
       plugin: "nav2_costmap_2d::InflationLayer"
-      cost_scaling_factor: 3.0
-      inflation_radius: 0.55
+      cost_scaling_factor: 1.5
+      inflation_radius: 0.8
 
 planner_server:
   ros__parameters:
@@ -257,22 +242,13 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: false
     feedback: "OPEN_LOOP"
-    max_velocity: [0.5, 0.0, 1.0]
-    min_velocity: [-0.5, 0.0, -1.0]
-    max_accel: [1.0, 0.0, 1.2]
-    max_decel: [-1.0, 0.0, -1.2]
+    max_velocity: [0.4, 0.0, 1]  #最大速度　FollowPathのdesired_liner_velとmax_allowed_linear(angular)_velと揃える。
+    min_velocity: [-0.4, 0.0, -1]  #最小速度
+    max_accel: [0.1, 0.0, 0.4]  #最大加速度
+    max_decel: [-0.1, 0.0, -0.4]  #最小加速度
     odom_topic: "odom"
     odom_duration: 0.1
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0
-
-#map_server:
-#  ros__parameters:
-#    yaml_filename: ""  # Will be filled by launch file
-#    topic_name: "map"
-#    frame_id: "map"
-#    use_sim_time: false
-#    output_timing: false
-
-
-
+    input_topic: "/cmd_vel_raw"  # Added to receive from controller
+    output_topic: "/cmd_vel"     # Added to send to robot

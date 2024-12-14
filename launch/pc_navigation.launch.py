@@ -82,7 +82,7 @@ def generate_launch_description():
         parameters=[{
             'use_sim_time': use_sim_time,
             'autostart': True,
-            'node_names': ['map_server', 'amcl', 'controller_server', 'planner_server', 'bt_navigator', 'behavior_server'],
+            'node_names': ['map_server', 'amcl', 'controller_server', 'planner_server', 'bt_navigator', 'behavior_server', 'velocity_smoother'],
             'bond_timeout': 4.0,
             'attempt_respawn_reconnection': True
         }]
@@ -123,13 +123,23 @@ def generate_launch_description():
         parameters=[nav2_params_path]
     )
 
-#    nav2_costmap_2d = Node(
-#        package='nav2_costmap_2d',
-#        executable='nav2_costmap_2d',
-#        name='nav2_costmap_2d',
-#        output='screen',
-#        parameters=[nav2_params_path]
-#    )
+    # Nav2Controller
+    nav2_controller_node = Node(
+        package='mirs_navigation',
+        executable='nav2_controller.py',
+        name='nav2_controller',
+        output='screen'
+    )
+
+    
+
+    nav2_costmap_2d = Node(
+        package='nav2_costmap_2d',
+        executable='nav2_costmap_2d',
+        name='nav2_costmap_2d',
+        output='screen',
+        parameters=[nav2_params_path]
+    )
 
     # RViz2
     rviz2_node = Node(
@@ -146,7 +156,7 @@ def generate_launch_description():
 
     ld.add_action(map_server)
     ld.add_action(lifecycle_manager)
-#    ld.add_action(nav2_costmap_2d)
+    #ld.add_action(nav2_costmap_2d)
     ld.add_action(controller_server)
     ld.add_action(planner_server)
     ld.add_action(behavior_server)
@@ -155,6 +165,7 @@ def generate_launch_description():
     ld.add_action(waypoint_follower)
     ld.add_action(amcl)
     ld.add_action(bt_navigator)
+    ld.add_action(nav2_controller_node)
     ld.add_action(rviz2_node)
 
     return ld
