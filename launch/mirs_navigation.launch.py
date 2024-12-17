@@ -1,44 +1,41 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
 from ament_index_python.packages import get_package_share_directory
 import os
 
 def generate_launch_description():
     # Get the launch directory
     nav2_bringup_dir = get_package_share_directory('nav2_bringup')
+    default_rviz_config_path = '/opt/ros/humble/share/nav2_bringup/rviz/nav2_default_view.rviz'  # 修正：直接定義
+    package_name = 'mirs_navigation'
     
-    # デフォルトのマップパスとRviz設定ファイルパスを設定
-    package_name = 'mirs_navigation'  # あなたのパッケージ名に変更してください
+    # Set default paths
     default_map_path = os.path.join(
         get_package_share_directory(package_name),
         'maps',
-        'hallway.yaml'  # あなたのマップファイル名に変更してください
+        'hallway.yaml'
     )
-    
-    default_rviz_config_path = os.path.join(
-        get_package_share_directory(package_name),
-        'rviz',
-        'default.rviz'  # あなたのRviz設定ファイル名に変更してください
-    )
-    
-    # ビヘイビアツリーのデフォルトパスを設定
+     
     default_bt_xml_path = os.path.join(
         get_package_share_directory(package_name),
         'btdata',
-        'sample.xml'
+        'be_sample.xml'
     )
     
-    # Create launch configuration variables
+    # 標準のnav2_params.yamlのパスを追加
+    nav2_params_path = os.path.join(nav2_bringup_dir, 'params', 'nav2_params.yaml')
+    
+    # Launch Configurations
     use_sim_time = LaunchConfiguration('use_sim_time')
     map_yaml_file = LaunchConfiguration('map')
     default_bt_xml_filename = LaunchConfiguration('default_bt_xml_filename')
+    params_file = LaunchConfiguration('params_file')
     rviz_config_file = LaunchConfiguration('rviz_config')
     
-    # Declare launch arguments
+    # Launch Arguments
     declare_use_sim_time_cmd = DeclareLaunchArgument(
         'use_sim_time',
         default_value='false',
@@ -57,13 +54,19 @@ def generate_launch_description():
         description='Full path to behavior tree xml file'
     )
     
+    declare_params_file_cmd = DeclareLaunchArgument(
+        'params_file',
+        default_value=nav2_params_path,
+        description='Full path to the ROS2 parameters file to use'
+    )
+    
     declare_rviz_config_file_cmd = DeclareLaunchArgument(
         'rviz_config',
-        default_value=default_rviz_config_path,
+        default_value=default_rviz_config_path,  # 修正：事前に定義した変数を使用
         description='Full path to the RVIZ config file to use'
     )
     
-    # Include the Nav2 launch file with our parameters
+    # Nav2 Launch
     nav2_bringup_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(nav2_bringup_dir, 'launch', 'bringup_launch.py')
@@ -71,11 +74,13 @@ def generate_launch_description():
         launch_arguments={
             'use_sim_time': use_sim_time,
             'map': map_yaml_file,
-            'default_bt_xml_filename': default_bt_xml_filename
+            'params_file': params_file,
+            'default_bt_xml_filename': default_bt_xml_filename,
+            'autostart': 'true'
         }.items()
     )
     
-    # Start RViz
+    # RViz Node
     rviz_node = Node(
         package='rviz2',
         executable='rviz2',
@@ -85,15 +90,32 @@ def generate_launch_description():
         output='screen'
     )
     
-    # Create the launch description
+    # Lifecycle Manager - AMCLを追加
+    lifecycle_manager = Node(
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='lifecycle_manager_navigation',
+        output='screen',
+        parameters=[{'use_sim_time': use_sim_time},
+                   {'autostart': True},
+                   {'node_names': ['controller_server',
+                                 'planner_server',
+                                 'recoveries_server',
+                                 'bt_navigator',
+                                 'map_server',
+                                 'amcl']}]  # AMCLを追加
+    )
+
+    # Launch Description
     ld = LaunchDescription()
     
-    # Add the commands to the launch description
     ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_map_yaml_cmd)
     ld.add_action(declare_bt_xml_cmd)
+    ld.add_action(declare_params_file_cmd)
     ld.add_action(declare_rviz_config_file_cmd)
     ld.add_action(nav2_bringup_launch)
+    ld.add_action(lifecycle_manager)
     ld.add_action(rviz_node)
     
     return ld

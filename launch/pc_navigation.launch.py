@@ -13,9 +13,10 @@ def generate_launch_description():
     package_path = get_package_share_directory(package_name)
     
     # 設定ファイルのパスを設定
-    nav2_params_path = os.path.join(package_path, 'config', 'nav2_params.yaml')
+    nav2_params_path = os.path.join(package_path, 'params', 'nav2_params.yaml')
     rviz_config_file = '/opt/ros/humble/share/nav2_bringup/rviz/nav2_default_view.rviz'
-    
+    #rviz_config_file = '/home/omasahiro/mirs2404_ws/src/mirs_slam_navigation/mirs_navigation/rviz/default.rviz'
+
     # デフォルトのマップパスを設定
     default_map_path = '/home/omasahiro/mirs2404_ws/src/mirs_slam_navigation/mirs_navigation/maps/hallway.yaml'
 
@@ -165,7 +166,7 @@ def generate_launch_description():
     ld.add_action(planner_server)
     ld.add_action(behavior_server)
     ld.add_action(smoother_server)
-    ld.add_action(nav2_costmap_2d)
+#    ld.add_action(nav2_costmap_2d)
     ld.add_action(velocity_smoother)  # controller_serverの後に配置
     ld.add_action(waypoint_follower)
     ld.add_action(bt_navigator)
