@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <ReactiveFallback name="root_fallback">
+      <Sequence name="cancel_sequence"><!-- キャンセル処理のシーケンス -->
+        <Wait wait_duration="0.1"/>  <!-- サービスチェック間隔 -->
+      </Sequence>
+      <Sequence name="navigation_sequence"><!-- メインのナビゲーション処理 -->
+        <NavigateToPose goal="{goal}"/><!-- 目標地点へのナビゲーション -->
+        <ReactiveFallback name="battery_check"><!-- バッテリー残量チェックとチャージステーションへの移動 -->
+          <Sequence>
+            <IsBatteryLow battery_topic="battery_status" min_battery="0.3"/>
+            <NavigateToPose goal="{charging_station}"/>
+          </Sequence>
+          <AlwaysSuccess/>
+        </ReactiveFallback>
+      </Sequence>
+    </ReactiveFallback>
+  </BehaviorTree>
+</root>
