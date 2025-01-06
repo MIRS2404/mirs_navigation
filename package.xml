@@ -4,7 +4,7 @@
     <name>mirs_navigation</name>
     <version>0.0.0</version>
     <description>SLAM package for mirs_mg5</description>
-    <maintainer email="oumuika@gmail.com">oumuika</maintainer>
+    <maintainer email="omasahiro.numazukosen@gmail.com">omasahiro</maintainer>
     <license>MIT</license>
 
     <buildtool_depend>ament_cmake</buildtool_depend>

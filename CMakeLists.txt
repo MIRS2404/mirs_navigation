@@ -5,12 +5,6 @@ project(mirs_navigation)
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 
-# Pythonパッケージのセットアップ（もしscriptsディレクトリがある場合）
-install(PROGRAMS
-  scripts/robot_control_node.py
-  DESTINATION lib/${PROJECT_NAME}
-)
-
 # 設定ファイルとlaunchファイルのインストール
 install(DIRECTORY
   launch

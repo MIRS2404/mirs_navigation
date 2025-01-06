@@ -16,18 +16,29 @@ def generate_launch_description():
     default_map_path = os.path.join(
         get_package_share_directory(package_name),
         'maps',
-        'hallway.yaml'
+        'mapNIT.yaml'
     )
      
+    #default_map_path = os.path.join(
+    #    get_package_share_directory('nav2_bringup'),
+    #    'maps',
+    #    'turtlebot3_world.yaml'
+    #)
+    
     default_bt_xml_path = os.path.join(
         get_package_share_directory(package_name),
         'btdata',
-        'be_sample.xml'
+        'patrol_tree.xml'
     )
     
     # 標準のnav2_params.yamlのパスを追加
-    nav2_params_path = os.path.join(nav2_bringup_dir, 'params', 'nav2_params.yaml')
-    
+    #nav2_params_path = os.path.join(nav2_bringup_dir, 'params', 'nav2_params.yaml')
+    nav2_params_path = os.path.join(
+        get_package_share_directory(package_name),
+        'params',
+        'nav2_params.yaml'
+    )
+
     # Launch Configurations
     use_sim_time = LaunchConfiguration('use_sim_time')
     map_yaml_file = LaunchConfiguration('map')
@@ -62,7 +73,7 @@ def generate_launch_description():
     
     declare_rviz_config_file_cmd = DeclareLaunchArgument(
         'rviz_config',
-        default_value=default_rviz_config_path,  # 修正：事前に定義した変数を使用
+        default_value=default_rviz_config_path,
         description='Full path to the RVIZ config file to use'
     )
     
@@ -79,7 +90,21 @@ def generate_launch_description():
             'autostart': 'true'
         }.items()
     )
+
+#    navigation_bt_node = Node(
+#        package='mirs_navigation',
+#        executable='navigation_bt_node',
+#        name='navigation_bt_node',
+#        output='screen'
+#    ) 
     
+    #navigation_control_node = Node(
+    #    package='mirs_navigation',
+    #    executable='navigation_control_node.py',
+    #    name='navigation_control_node',
+    #    output='screen'
+    #)
+
     # RViz Node
     rviz_node = Node(
         package='rviz2',
@@ -98,17 +123,30 @@ def generate_launch_description():
         output='screen',
         parameters=[{'use_sim_time': use_sim_time},
                    {'autostart': True},
-                   {'node_names': ['controller_server',
-                                 'planner_server',
-                                 'recoveries_server',
-                                 'bt_navigator',
-                                 'map_server',
-                                 'amcl']}]  # AMCLを追加
+                   {'node_names': ['controller_server', 'planner_server', 'recoveries_server', 'bt_navigator', 'map_server', 'amcl']}]
     )
+
+    bt_ctrl = Node(
+        package='behaviortree_cpp_v3',
+        executable='bt_ros2_control_node',
+        name='bt_ros2_control',
+        output='screen',
+        parameters=[
+            {'publisher_port': 1666},
+            {'server_port': 1667}
+        ]
+    )
+
+
+
+    
 
     # Launch Description
     ld = LaunchDescription()
     
+    #ld.add_action(navigation_bt_node)
+    #ld.add_action(bt_ctrl)
+    #ld.add_action(navigation_control_node)
     ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_map_yaml_cmd)
     ld.add_action(declare_bt_xml_cmd)
