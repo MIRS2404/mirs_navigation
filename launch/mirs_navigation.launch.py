@@ -13,17 +13,17 @@ def generate_launch_description():
     package_name = 'mirs_navigation'
     
     # Set default paths
-    default_map_path = os.path.join(
-        get_package_share_directory(package_name),
-        'maps',
-        'mapNIT.yaml'
-    )
-     
     #default_map_path = os.path.join(
-    #    get_package_share_directory('nav2_bringup'),
+    #    get_package_share_directory(package_name),
     #    'maps',
-    #    'turtlebot3_world.yaml'
+    #    'mapNIT.yaml'
     #)
+     
+    default_map_path = os.path.join(
+        get_package_share_directory('nav2_bringup'),
+        'maps',
+        'turtlebot3_world.yaml'
+    )
     
     default_bt_xml_path = os.path.join(
         get_package_share_directory(package_name),

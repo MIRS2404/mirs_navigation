@@ -9,3 +9,11 @@ nav2_params.yamlのcontroller_server内のvelocity_smootherを消したけどこ
 ## 今後修正が必要だとわかっていること
 
 /global_costmapが表示されない問題の解決
+
+## 全ての起動手順
+
+cd ~/mirs2404_ws
+source install/setup.bash
+ros2 launch mirs_navigation mirs_navigation.launch.py
+
+ros2 launch mirs_navigation mirs2404.launch.py
