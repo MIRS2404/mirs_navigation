@@ -9,21 +9,22 @@ import os
 def generate_launch_description():
     # Get the launch directory
     nav2_bringup_dir = get_package_share_directory('nav2_bringup')
+    #default_rviz_config_path = '/home/omasahiro/mirs2404_ws/src/mirs_slam_navigation/mirs_navigation/rviz/default.rviz'
     default_rviz_config_path = '/opt/ros/humble/share/nav2_bringup/rviz/nav2_default_view.rviz'  # 修正：直接定義
     package_name = 'mirs_navigation'
     
     # Set default paths
-    #default_map_path = os.path.join(
-    #    get_package_share_directory(package_name),
-    #    'maps',
-    #    'mapNIT.yaml'
-    #)
-     
     default_map_path = os.path.join(
-        get_package_share_directory('nav2_bringup'),
+        get_package_share_directory(package_name),
         'maps',
-        'turtlebot3_world.yaml'
+        'mapNIT.yaml'
     )
+     
+    #default_map_path = os.path.join(
+    #    get_package_share_directory('nav2_bringup'),
+    #    'maps',
+    #    'turtlebot3_world.yaml'
+    #)
     
     default_bt_xml_path = os.path.join(
         get_package_share_directory(package_name),
@@ -32,7 +33,7 @@ def generate_launch_description():
     )
     
     # 標準のnav2_params.yamlのパスを追加
-    #nav2_params_path = os.path.join(nav2_bringup_dir, 'params', 'nav2_params.yaml')
+    #nav2_params_path = '/opt/ros/humble/share/nav2_bringup/params/nav2_params.yaml'
     nav2_params_path = os.path.join(
         get_package_share_directory(package_name),
         'params',
